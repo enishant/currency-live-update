@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <title>Customer Frontend</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1>Customer Frontend</h1>
+          <h2>BTC Rate</h2>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="usd">BTC to USD:</label>
+            <div id="usd"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="inr">BTC to INR:</label>
+            <div id="inr"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="aud">BTC to AUD:</label>
+            <div id="aud"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery.min.js"></script>
+    <script src="/popper.min.js"></script>
+    <script src="/bootstrap.min.js"></script>
+    <script> 
+      var old_usd = 0;
+      var old_inr = 0;
+      var old_aud = 0;
+      var update_once = true;
+      function currencyHTML(currency,old_rate,newrate) {
+        if(newrate != undefined && newrate != '' && !isNaN(newrate) && newrate > 0) {
+          if(newrate > old_rate) {
+            $('#' + currency).html('<div class="alert alert-success">' + newrate + '</div>');
+          } else if(newrate == old_rate) {
+            $('#' + currency).html('<div class="alert alert-info">' + newrate + '</div>');
+          } else {
+            $('#' + currency).html('<div class="alert alert-danger">' + newrate + '</div>');
+          }
+          if(currency == 'usd') {
+            old_usd = newrate;  
+          } else if(currency == 'inr') {
+            old_inr = newrate;
+          } else if(currency == 'aud') {
+            old_aud = newrate;
+          }
+        }
+      }
+      var socket = io();
+      socket.on('currencyDefault',function(data) {
+        if(data != undefined && Object.keys(data).length == 3 && update_once) {
+          currencyHTML('usd',old_usd,data.usd);
+          currencyHTML('inr',old_inr,data.inr);
+          currencyHTML('aud',old_aud,data.aud);
+          update_once = false;
+        }
+      });
+      socket.on('broadcastToAllClients',function(data) {
+        if(data != undefined && Object.keys(data).length == 3) {
+          currencyHTML('usd',old_usd,data.usd);
+          currencyHTML('inr',old_inr,data.inr);
+          currencyHTML('aud',old_aud,data.aud);
+        }
+      });
+    </script>
+  </body>
+</html>

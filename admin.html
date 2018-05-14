@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="/bootstrap.min.css">
+    <title>Admin Dashboard</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1>Admin Dashboard</h1>
+          <h2>BTC Rate</h2>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="usd">BTC to USD:</label>
+            <input type="text" class="form-control" id="usd">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="inr">BTC to INR:</label>
+            <input type="text" class="form-control" id="inr">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label for="aud">BTC to AUD:</label>
+            <input type="text" class="form-control" id="aud">
+          </div>
+        </div>
+        <div class="col-md-12">
+          <button type="button" class="btn btn-default" id="update_currency">Update</button>
+        </div>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery.min.js"></script>
+    <script src="/popper.min.js"></script>
+    <script src="/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function(){
+        var socket = io();
+        var update_once = true;
+        socket.on('currencyDefault',function(data) {
+          if(data != undefined && Object.keys(data).length == 3 && update_once) {
+            $('#usd').val(data.usd);
+            $('#inr').val(data.inr);
+            $('#aud').val(data.aud);
+            update_once = false;
+          }
+        });
+
+        $('#update_currency').on('click',function() {
+          $('#update_currency').attr('disabled',true);
+          $('#update_currency').attr('style','pointer-events:none');
+          var usd = $('#usd').val();
+          var inr = $('#inr').val();
+          var aud = $('#aud').val();
+          if(usd != undefined && usd != '' && !isNaN(usd) && inr != undefined && inr != ''  && !isNaN(inr) && aud != undefined && aud != '' && !isNaN(aud)) {
+            var currency_data = {
+              usd: usd,
+              inr: inr,
+              aud: aud,
+            };
+            socket.emit('currencyUpdated', currency_data);
+            setTimeout(function(){
+              $('#update_currency').removeAttr('style');
+              $('#update_currency').attr('disabled',false);
+            },1000);
+          }
+        });
+        
+        $('#usd,#inr,#aud').keyup(function(e) {
+          var k = e.keyCode;
+          if(k == undefined || k == '') {
+            k = e.which;
+          }
+          if(k != undefined && k != '' && k == 13) {
+            $('#update_currency').trigger('click');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
