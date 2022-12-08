@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Websocket live currency update app",
   "dependencies": {
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "socket.io": "^2.5.0"
   }
 }
